@@ -15,7 +15,27 @@ The minimum requirement of Go is **1.16**.
 
 ## Getting started
 
-TBD
+```go
+package main
+
+import (
+	"time"
+
+	"github.com/flamego/cache"
+	"github.com/flamego/flamego"
+)
+
+func main() {
+	f := flamego.Classic()
+	f.Use(cache.Cacher())
+	f.Get("/", func(cache cache.Cache) {
+		_ = cache.Set("cooldown", true, time.Minute)
+		cooldown, ok := cache.Get("cooldown").(bool)
+		// ...
+	})
+	f.Run()
+}
+```
 
 ## License
 
