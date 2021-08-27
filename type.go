@@ -24,10 +24,3 @@ func GobEncoder(v interface{}) ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
-
-// GobDecoder is a cache data decoder using Gob.
-func GobDecoder(binary []byte) (interface{}, error) {
-	buf := bytes.NewBuffer(binary)
-	var v interface{}
-	return v, gob.NewDecoder(buf).Decode(&v)
-}

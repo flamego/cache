@@ -5,9 +5,12 @@
 package postgres
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/gob"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/jackc/pgx/v4"
@@ -40,23 +43,35 @@ func newPostgresStore(cfg Config) *postgresStore {
 	}
 }
 
-func (s *postgresStore) Get(ctx context.Context, key string) interface{} {
+type item struct {
+	Value interface{}
+}
+
+func (s *postgresStore) Get(ctx context.Context, key string) (interface{}, error) {
 	var binary []byte
 	q := fmt.Sprintf(`SELECT data FROM %q WHERE key = $1 AND expired_at > $2`, s.table)
 	err := s.db.QueryRowContext(ctx, q, key, s.nowFunc()).Scan(&binary)
 	if err != nil {
-		return nil
+		if err == sql.ErrNoRows {
+			return nil, os.ErrNotExist
+		}
+		return nil, errors.Wrap(err, "select")
 	}
 
-	value, err := s.decoder(binary)
+	v, err := s.decoder(binary)
 	if err != nil {
-		return nil
+		return nil, errors.Wrap(err, "decode")
 	}
-	return value
+
+	item, ok := v.(*item)
+	if !ok {
+		return nil, os.ErrNotExist
+	}
+	return item.Value, nil
 }
 
 func (s *postgresStore) Set(ctx context.Context, key string, value interface{}, lifetime time.Duration) error {
-	binary, err := s.encoder(value)
+	binary, err := s.encoder(item{value})
 	if err != nil {
 		return errors.Wrap(err, "encode")
 	}
@@ -106,7 +121,7 @@ type Config struct {
 	Table string
 	// Encoder is the encoder to encode cache data. Default is cache.GobEncoder.
 	Encoder cache.Encoder
-	// Decoder is the decoder to decode cache data. Default is cache.GobDecoder.
+	// Decoder is the decoder to decode cache data. Default is a Gob decoder.
 	Decoder cache.Decoder
 }
 
@@ -153,7 +168,11 @@ func Initer() cache.Initer {
 			cfg.Encoder = cache.GobEncoder
 		}
 		if cfg.Decoder == nil {
-			cfg.Decoder = cache.GobDecoder
+			cfg.Decoder = func(binary []byte) (interface{}, error) {
+				buf := bytes.NewBuffer(binary)
+				var v item
+				return &v, gob.NewDecoder(buf).Decode(&v)
+			}
 		}
 
 		return newPostgresStore(*cfg), nil

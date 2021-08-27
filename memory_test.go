@@ -9,6 +9,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -26,18 +27,20 @@ func TestMemoryStore(t *testing.T) {
 
 		assert.Nil(t, cache.Set(ctx, "username", "flamego", time.Minute))
 
-		username, ok := cache.Get(ctx, "username").(string)
+		v, err := cache.Get(ctx, "username")
+		assert.Nil(t, err)
+		username, ok := v.(string)
 		assert.True(t, ok)
 		assert.Equal(t, "flamego", username)
 
 		assert.Nil(t, cache.Delete(ctx, "username"))
-		_, ok = cache.Get(ctx, "username").(string)
-		assert.False(t, ok)
+		_, err = cache.Get(ctx, "username")
+		assert.Equal(t, os.ErrNotExist, err)
 
 		assert.Nil(t, cache.Set(ctx, "random", "value", time.Minute))
 		assert.Nil(t, cache.Flush(ctx))
-		_, ok = cache.Get(ctx, "random").(string)
-		assert.False(t, ok)
+		_, err = cache.Get(ctx, "random")
+		assert.Equal(t, os.ErrNotExist, err)
 	})
 
 	resp := httptest.NewRecorder()
@@ -64,7 +67,8 @@ func TestMemoryStore_GC(t *testing.T) {
 
 	// Read on an expired cache item should remove it
 	now = now.Add(2 * time.Second)
-	assert.Nil(t, store.Get(ctx, "1"))
+	_, err := store.Get(ctx, "1")
+	assert.Equal(t, os.ErrNotExist, err)
 
 	// "2" should be recycled
 	assert.Nil(t, store.GC(ctx))
