@@ -99,7 +99,7 @@ func (s *memoryStore) Pop() interface{} {
 	return item
 }
 
-func (s *memoryStore) Get(key string) interface{} {
+func (s *memoryStore) Get(ctx context.Context, key string) interface{} {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -109,13 +109,13 @@ func (s *memoryStore) Get(key string) interface{} {
 	}
 
 	if !s.nowFunc().Before(item.expiredAt) {
-		go func() { _ = s.Delete(key) }()
+		go func() { _ = s.Delete(ctx, key) }()
 		return nil
 	}
 	return item.value
 }
 
-func (s *memoryStore) Set(key string, value interface{}, lifetime time.Duration) error {
+func (s *memoryStore) Set(_ context.Context, key string, value interface{}, lifetime time.Duration) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -124,7 +124,7 @@ func (s *memoryStore) Set(key string, value interface{}, lifetime time.Duration)
 	return nil
 }
 
-func (s *memoryStore) Delete(key string) error {
+func (s *memoryStore) Delete(_ context.Context, key string) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -137,7 +137,7 @@ func (s *memoryStore) Delete(key string) error {
 	return nil
 }
 
-func (s *memoryStore) Flush() error {
+func (s *memoryStore) Flush(context.Context) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
