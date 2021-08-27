@@ -171,6 +171,7 @@ func TestPostgresStore_GC(t *testing.T) {
 			db:      db,
 		},
 	)
+	assert.Nil(t, err)
 
 	assert.Nil(t, store.Set(ctx, "1", "1", time.Second))
 	assert.Nil(t, store.Set(ctx, "2", "2", 2*time.Second))
