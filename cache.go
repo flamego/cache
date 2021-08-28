@@ -14,15 +14,15 @@ import (
 // Cache is a cache store with capabilities of setting, reading, deleting and GC
 // cache data.
 type Cache interface {
-	// Get returns the value of given key in the cache. It returns nil if no such
-	// key exists.
-	Get(key string) interface{}
+	// Get returns the value of given key in the cache. It returns os.ErrNotExist if
+	// no such key exists or the key has expired.
+	Get(ctx context.Context, key string) (interface{}, error)
 	// Set sets the value of the key with given lifetime in the cache.
-	Set(key string, value interface{}, lifetime time.Duration) error
+	Set(ctx context.Context, key string, value interface{}, lifetime time.Duration) error
 	// Delete deletes a key from the cache.
-	Delete(key string) error
+	Delete(ctx context.Context, key string) error
 	// Flush wipes out all existing data in the cache.
-	Flush() error
+	Flush(ctx context.Context) error
 	// GC performs a GC operation on the cache store.
 	GC(ctx context.Context) error
 }

@@ -7,6 +7,7 @@ package cache
 import (
 	"container/heap"
 	"context"
+	"os"
 	"sync"
 	"time"
 )
@@ -99,23 +100,23 @@ func (s *memoryStore) Pop() interface{} {
 	return item
 }
 
-func (s *memoryStore) Get(key string) interface{} {
+func (s *memoryStore) Get(ctx context.Context, key string) (interface{}, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	item, ok := s.index[key]
 	if !ok {
-		return nil
+		return nil, os.ErrNotExist
 	}
 
 	if !s.nowFunc().Before(item.expiredAt) {
-		go func() { _ = s.Delete(key) }()
-		return nil
+		go func() { _ = s.Delete(ctx, key) }()
+		return nil, os.ErrNotExist
 	}
-	return item.value
+	return item.value, nil
 }
 
-func (s *memoryStore) Set(key string, value interface{}, lifetime time.Duration) error {
+func (s *memoryStore) Set(_ context.Context, key string, value interface{}, lifetime time.Duration) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -124,7 +125,7 @@ func (s *memoryStore) Set(key string, value interface{}, lifetime time.Duration)
 	return nil
 }
 
-func (s *memoryStore) Delete(key string) error {
+func (s *memoryStore) Delete(_ context.Context, key string) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -137,7 +138,7 @@ func (s *memoryStore) Delete(key string) error {
 	return nil
 }
 
-func (s *memoryStore) Flush() error {
+func (s *memoryStore) Flush(context.Context) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
