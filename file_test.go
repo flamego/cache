@@ -64,11 +64,14 @@ func TestFileStore(t *testing.T) {
 func TestFileStore_GC(t *testing.T) {
 	ctx := context.Background()
 	now := time.Now()
-	store := newMemoryStore(
-		MemoryConfig{
+	store, err := FileIniter()(
+		ctx,
+		FileConfig{
 			nowFunc: func() time.Time { return now },
+			RootDir: filepath.Join(os.TempDir(), "cache"),
 		},
 	)
+	assert.Nil(t, err)
 
 	assert.Nil(t, store.Set(ctx, "1", "1", time.Second))
 	assert.Nil(t, store.Set(ctx, "2", "2", 2*time.Second))
@@ -76,11 +79,16 @@ func TestFileStore_GC(t *testing.T) {
 
 	// Read on an expired cache item should remove it
 	now = now.Add(2 * time.Second)
-	_, err := store.Get(ctx, "1")
+	_, err = store.Get(ctx, "1")
 	assert.Equal(t, os.ErrNotExist, err)
 
 	// "2" should be recycled
 	assert.Nil(t, store.GC(ctx))
+	_, err = store.Get(ctx, "2")
+	assert.Equal(t, os.ErrNotExist, err)
 
-	assert.Equal(t, 1, store.Len())
+	// "3" should be returned
+	v, err := store.Get(ctx, "3")
+	assert.Nil(t, err)
+	assert.Equal(t, "3", v)
 }
