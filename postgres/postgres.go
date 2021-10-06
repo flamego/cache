@@ -119,7 +119,7 @@ type Config struct {
 	DSN string
 	// Table is the table name for storing cache data. Default is "cache".
 	Table string
-	// Encoder is the encoder to encode cache data. Default is cache.GobEncoder.
+	// Encoder is the encoder to encode cache data. Default is a Gob encoder.
 	Encoder cache.Encoder
 	// Decoder is the decoder to decode cache data. Default is a Gob decoder.
 	Decoder cache.Decoder

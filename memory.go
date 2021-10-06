@@ -32,6 +32,7 @@ func newMemoryItem(key string, value interface{}, expiredAt time.Time) *memoryIt
 }
 
 var _ Cache = (*memoryStore)(nil)
+var _ heap.Interface = (*memoryStore)(nil)
 
 // memoryStore is an in-memory implementation of the cache store.
 type memoryStore struct {
