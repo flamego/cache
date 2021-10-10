@@ -99,7 +99,7 @@ jobs:
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     services:
-      postgres:
+      redis:
         image: redis:6
         options: >-
           --health-cmd "redis-cli ping"
