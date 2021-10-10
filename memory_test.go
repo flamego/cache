@@ -37,6 +37,13 @@ func TestMemoryStore(t *testing.T) {
 		_, err = cache.Get(ctx, "username")
 		assert.Equal(t, os.ErrNotExist, err)
 
+		assert.Nil(t, cache.Set(ctx, "timeout", time.Minute, time.Hour))
+		v, err = cache.Get(ctx, "timeout")
+		assert.Nil(t, err)
+		timeout, ok := v.(time.Duration)
+		assert.True(t, ok)
+		assert.Equal(t, time.Minute, timeout)
+
 		assert.Nil(t, cache.Set(ctx, "random", "value", time.Minute))
 		assert.Nil(t, cache.Flush(ctx))
 		_, err = cache.Get(ctx, "random")

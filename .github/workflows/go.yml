@@ -90,3 +90,38 @@ jobs:
         with:
           file: ./coverage
           flags: unittests
+
+  redis:
+    name: Redis
+    strategy:
+      matrix:
+        go-version: [ 1.16.x ]
+        platform: [ ubuntu-latest ]
+    runs-on: ${{ matrix.platform }}
+    services:
+      redis:
+        image: redis:6
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run tests with coverage
+        run: go test -v -race -coverprofile=coverage -covermode=atomic ./redis
+        env:
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v1.5.0
+        with:
+          file: ./coverage
+          flags: unittests
