@@ -2,106 +2,58 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package postgres
+package redis
 
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/gob"
-	"flag"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
-	"sync"
 	"testing"
 	"time"
 
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/log/testingadapter"
-	"github.com/jackc/pgx/v4/stdlib"
+	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/flamego/cache"
 	"github.com/flamego/flamego"
 )
 
-var flagParseOnce sync.Once
+func newTestClient(t *testing.T, ctx context.Context) (testClient *redis.Client, cleanup func() error) {
+	const db = 15
+	testClient = redis.NewClient(
+		&redis.Options{
+			Addr: os.ExpandEnv("$REDIS_HOST:$REDIS_PORT"),
+			DB:   db,
+		},
+	)
 
-func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func() error) {
-	dsn := os.ExpandEnv("postgres://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/?sslmode=$PGSSLMODE")
-	db, err := openDB(dsn)
+	err := testClient.FlushDB(ctx).Err()
 	if err != nil {
-		t.Fatalf("Failed to open database: %v", err)
-	}
-
-	dbname := "flamego-test-cache"
-	_, err = db.ExecContext(ctx, fmt.Sprintf(`DROP DATABASE IF EXISTS %q`, dbname))
-	if err != nil {
-		t.Fatalf("Failed to drop test database: %v", err)
-	}
-
-	_, err = db.ExecContext(ctx, fmt.Sprintf(`CREATE DATABASE %q`, dbname))
-	if err != nil {
-		t.Fatalf("Failed to create test database: %v", err)
-	}
-
-	cfg, err := url.Parse(dsn)
-	if err != nil {
-		t.Fatalf("Failed to parse DSN: %v", err)
-	}
-	cfg.Path = "/" + dbname
-
-	flagParseOnce.Do(flag.Parse)
-
-	connConfig, err := pgx.ParseConfig(cfg.String())
-	if err != nil {
-		t.Fatalf("Failed to parse test database config: %v", err)
-	}
-	if testing.Verbose() {
-		connConfig.Logger = testingadapter.NewLogger(t)
-		connConfig.LogLevel = pgx.LogLevelTrace
-	}
-
-	testDB = stdlib.OpenDB(*connConfig)
-
-	q := `
-CREATE TABLE cache (
-    key        TEXT PRIMARY KEY,
-    data       BYTEA NOT NULL,
-    expired_at TIMESTAMP WITH TIME ZONE NOT NULL
-)`
-	_, err = testDB.ExecContext(ctx, q)
-	if err != nil {
-		t.Fatalf("Failed to create cache table: %v", err)
+		t.Fatalf("Failed to flush test database: %v", err)
 	}
 
 	t.Cleanup(func() {
-		defer func() { _ = db.Close() }()
+		defer func() { _ = testClient.Close() }()
 
 		if t.Failed() {
-			t.Logf("DATABASE %s left intact for inspection", dbname)
+			t.Logf("DATABASE %d left intact for inspection", db)
 			return
 		}
 
-		err := testDB.Close()
+		err := testClient.FlushDB(ctx).Err()
 		if err != nil {
-			t.Fatalf("Failed to close test connection: %v", err)
-		}
-
-		_, err = db.ExecContext(ctx, fmt.Sprintf(`DROP DATABASE %q`, dbname))
-		if err != nil {
-			t.Fatalf("Failed to drop test database: %v", err)
+			t.Fatalf("Failed to flush test database: %v", err)
 		}
 	})
-	return testDB, func() error {
+	return testClient, func() error {
 		if t.Failed() {
 			return nil
 		}
 
-		_, err = testDB.ExecContext(ctx, `TRUNCATE cache RESTART IDENTITY CASCADE`)
+		err := testClient.FlushDB(ctx).Err()
 		if err != nil {
 			return err
 		}
@@ -109,11 +61,11 @@ CREATE TABLE cache (
 	}
 }
 
-func TestPostgresStore(t *testing.T) {
+func TestRedisStore(t *testing.T) {
 	gob.Register(time.Duration(0))
 
 	ctx := context.Background()
-	db, cleanup := newTestDB(t, ctx)
+	client, cleanup := newTestClient(t, ctx)
 	t.Cleanup(func() {
 		assert.Nil(t, cleanup())
 	})
@@ -123,8 +75,7 @@ func TestPostgresStore(t *testing.T) {
 		cache.Options{
 			Initer: Initer(),
 			Config: Config{
-				nowFunc: time.Now,
-				db:      db,
+				client: client,
 			},
 		},
 	))
@@ -166,29 +117,27 @@ func TestPostgresStore(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
-func TestPostgresStore_GC(t *testing.T) {
+func TestRedisStore_GC(t *testing.T) {
 	ctx := context.Background()
-	db, cleanup := newTestDB(t, ctx)
+	client, cleanup := newTestClient(t, ctx)
 	t.Cleanup(func() {
 		assert.Nil(t, cleanup())
 	})
 
-	now := time.Now()
 	store, err := Initer()(
 		ctx,
 		Config{
-			nowFunc: func() time.Time { return now },
-			db:      db,
+			client: client,
 		},
 	)
 	assert.Nil(t, err)
 
-	assert.Nil(t, store.Set(ctx, "1", "1", time.Second))
+	assert.Nil(t, store.Set(ctx, "1", "1", 1*time.Second))
 	assert.Nil(t, store.Set(ctx, "2", "2", 2*time.Second))
 	assert.Nil(t, store.Set(ctx, "3", "3", 3*time.Second))
 
 	// Read on an expired cache item should remove it
-	now = now.Add(2 * time.Second)
+	time.Sleep(2 * time.Second)
 	_, err = store.Get(ctx, "1")
 	assert.Equal(t, os.ErrNotExist, err)
 
