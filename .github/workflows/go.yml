@@ -133,22 +133,9 @@ jobs:
         go-version: [ 1.16.x ]
         platform: [ ubuntu-18.04 ]
     runs-on: ${{ matrix.platform }}
-#    services:
-#      mysql:
-#        image: mysql:5.7
-#        env:
-#          MYSQL_USER: mysql
-#          MYSQL_PASSWORD: mysql
-#        options: >-
-#          --health-cmd "mysqladmin ping"
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
-#        ports:
-#          - 3306:3306
     steps:
       - name: Start MySQL server
-        run: sudo /etc/init.d/mysql start
+        run: sudo systemctl start mysql
       - name: Install Go
         uses: actions/setup-go@v2
         with:
@@ -158,8 +145,8 @@ jobs:
       - name: Run tests with coverage
         run: go test -v -race -coverprofile=coverage -covermode=atomic ./mysql
         env:
-          MYSQL_USER: mysql
-          MYSQL_PASSWORD: mysql
+          MYSQL_USER: root
+          MYSQL_PASSWORD: root
           MYSQL_HOST: localhost
           MYSQL_PORT: 3306
       - name: Upload coverage report to Codecov
