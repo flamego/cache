@@ -187,7 +187,7 @@ func TestMySQLStore_GC(t *testing.T) {
 	_, err = store.Get(ctx, "2")
 	assert.Equal(t, os.ErrNotExist, err)
 
-	// "3" should not be returned
+	// "3" should be returned
 	v, err := store.Get(ctx, "3")
 	assert.Nil(t, err)
 	assert.Equal(t, "3", v)
