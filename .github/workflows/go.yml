@@ -100,7 +100,7 @@ jobs:
     runs-on: ${{ matrix.platform }}
     services:
       redis:
-        image: redis:3
+        image: redis:4
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
