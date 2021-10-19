@@ -131,22 +131,24 @@ jobs:
     strategy:
       matrix:
         go-version: [ 1.16.x ]
-        platform: [ ubuntu-latest ]
+        platform: [ ubuntu-18.04 ]
     runs-on: ${{ matrix.platform }}
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_USER: mysql
-          MYSQL_PASSWORD: mysql
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 3306:3306
+#    services:
+#      mysql:
+#        image: mysql:5.7
+#        env:
+#          MYSQL_USER: mysql
+#          MYSQL_PASSWORD: mysql
+#        options: >-
+#          --health-cmd "mysqladmin ping"
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#        ports:
+#          - 3306:3306
     steps:
+      - name: Start MySQL server
+        run: sudo /etc/init.d/mysql start
       - name: Install Go
         uses: actions/setup-go@v2
         with:
