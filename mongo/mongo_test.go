@@ -61,7 +61,7 @@ func TestMongoStore(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {
-		assert.Nil(t, cleanup())
+		assert.NoError(t, cleanup())
 	})
 
 	f := flamego.NewWithLogger(&bytes.Buffer{})
@@ -116,7 +116,7 @@ func TestMongoStore_GC(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {
-		assert.Nil(t, cleanup())
+		assert.NoError(t, cleanup())
 	})
 
 	now := time.Now()
@@ -127,11 +127,11 @@ func TestMongoStore_GC(t *testing.T) {
 			db:      db,
 		},
 	)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
-	assert.Nil(t, store.Set(ctx, "1", "1", time.Second))
-	assert.Nil(t, store.Set(ctx, "2", "2", 2*time.Second))
-	assert.Nil(t, store.Set(ctx, "3", "3", 3*time.Second))
+	assert.NoError(t, store.Set(ctx, "1", "1", time.Second))
+	assert.NoError(t, store.Set(ctx, "2", "2", 2*time.Second))
+	assert.NoError(t, store.Set(ctx, "3", "3", 3*time.Second))
 
 	// Read on an expired cache item should remove it
 	now = now.Add(2 * time.Second)
@@ -139,12 +139,12 @@ func TestMongoStore_GC(t *testing.T) {
 	assert.Equal(t, os.ErrNotExist, err)
 
 	// "2" should be recycled
-	assert.Nil(t, store.GC(ctx))
+	assert.NoError(t, store.GC(ctx))
 	_, err = store.Get(ctx, "2")
 	assert.Equal(t, os.ErrNotExist, err)
 
 	// "3" should be returned
 	v, err := store.Get(ctx, "3")
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.Equal(t, "3", v)
 }
