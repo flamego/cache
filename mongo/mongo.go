@@ -52,7 +52,7 @@ type cacheFields struct {
 func (s *mongoStore) Get(ctx context.Context, key string) (interface{}, error) {
 	var fields cacheFields
 	err := s.db.Collection(s.collection).
-		FindOne(ctx, bson.M{"key": key, "expired_at": bson.M{"$gt": s.nowFunc()}}).Decode(&fields)
+		FindOne(ctx, bson.M{"key": key, "expired_at": bson.M{"$gt": s.nowFunc().UTC()}}).Decode(&fields)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, os.ErrNotExist
@@ -150,13 +150,13 @@ func Initer() cache.Initer {
 		if cfg == nil {
 			return nil, fmt.Errorf("config object with the type '%T' not found", Config{})
 		} else if cfg.Database == "" && cfg.db == nil {
-			return nil, errors.New("empty DSN")
+			return nil, errors.New("empty Database")
 		}
 
 		if cfg.db == nil {
 			client, err := mongo.Connect(ctx, cfg.Options)
 			if err != nil {
-				return nil, errors.Wrap(err, "open database")
+				return nil, errors.Wrap(err, "connect database")
 			}
 			cfg.db = client.Database(cfg.Database)
 		}
