@@ -67,17 +67,6 @@ func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func(
 
 	testDB = stdlib.OpenDB(*connConfig)
 
-	q := `
-CREATE TABLE cache (
-	key        TEXT PRIMARY KEY,
-	data       BYTEA NOT NULL,
-	expired_at TIMESTAMP WITH TIME ZONE NOT NULL
-)`
-	_, err = testDB.ExecContext(ctx, q)
-	if err != nil {
-		t.Fatalf("Failed to create cache table: %v", err)
-	}
-
 	t.Cleanup(func() {
 		defer func() { _ = db.Close() }()
 
@@ -123,8 +112,9 @@ func TestPostgresStore(t *testing.T) {
 		cache.Options{
 			Initer: Initer(),
 			Config: Config{
-				nowFunc: time.Now,
-				db:      db,
+				nowFunc:   time.Now,
+				db:        db,
+				InitTable: true,
 			},
 		},
 	))
@@ -177,8 +167,9 @@ func TestPostgresStore_GC(t *testing.T) {
 	store, err := Initer()(
 		ctx,
 		Config{
-			nowFunc: func() time.Time { return now },
-			db:      db,
+			nowFunc:   func() time.Time { return now },
+			db:        db,
+			InitTable: true,
 		},
 	)
 	assert.Nil(t, err)
