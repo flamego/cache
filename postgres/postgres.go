@@ -123,6 +123,8 @@ type Config struct {
 	Encoder cache.Encoder
 	// Decoder is the decoder to decode cache data. Default is a Gob decoder.
 	Decoder cache.Decoder
+	// InitTable indicates whether to create a default cache table when not exists automatically.
+	InitTable bool
 }
 
 func openDB(dsn string) (*sql.DB, error) {
@@ -156,6 +158,18 @@ func Initer() cache.Initer {
 				return nil, errors.Wrap(err, "open database")
 			}
 			cfg.db = db
+		}
+
+		if cfg.InitTable {
+			q := `
+CREATE TABLE IF NOT EXISTS cache (
+	key        TEXT PRIMARY KEY,
+	data       BYTEA NOT NULL,
+	expired_at TIMESTAMP WITH TIME ZONE NOT NULL
+)`
+			if _, err := cfg.db.ExecContext(ctx, q); err != nil {
+				return nil, errors.Wrap(err, "create table")
+			}
 		}
 
 		if cfg.nowFunc == nil {
