@@ -34,7 +34,7 @@ func main() {
 	})
 	f.Get("/get", func(r *http.Request, cache cache.Cache) string {
 		v, err := cache.Get(r.Context(), "cooldown")
-		if err != nil {
+		if err != nil && err != os.ErrNotExist {
 			return err.Error()
 		}
 
