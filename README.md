@@ -19,6 +19,7 @@ The minimum requirement of Go is **1.16**.
 package main
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/flamego/cache"
@@ -28,10 +29,20 @@ import (
 func main() {
 	f := flamego.Classic()
 	f.Use(cache.Cacher())
-	f.Get("/", func(cache cache.Cache) {
-		_ = cache.Set("cooldown", true, time.Minute)
-		cooldown, ok := cache.Get("cooldown").(bool)
-		// ...
+	f.Get("/set", func(r *http.Request, cache cache.Cache) error {
+		return cache.Set(r.Context(), "cooldown", true, time.Minute)
+	})
+	f.Get("/get", func(r *http.Request, cache cache.Cache) string {
+		v, err := cache.Get(r.Context(), "cooldown")
+		if err != nil {
+			return err.Error()
+		}
+
+		cooldown, ok := v.(bool)
+		if !ok || !cooldown {
+			return "It has been cooled"
+		}
+		return "Still hot"
 	})
 	f.Run()
 }
@@ -39,6 +50,7 @@ func main() {
 
 ## Getting help
 
+- Read [documentation and examples](https://flamego.dev/middleware/cache.html).
 - Please [file an issue](https://github.com/flamego/flamego/issues) or [start a discussion](https://github.com/flamego/flamego/discussions) on the [flamego/flamego](https://github.com/flamego/flamego) repository.
 
 ## License
