@@ -3,7 +3,7 @@ module github.com/flamego/cache
 go 1.16
 
 require (
-	github.com/flamego/flamego v1.2.1
+	github.com/flamego/flamego v1.4.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/go-cmp v0.5.6 // indirect
