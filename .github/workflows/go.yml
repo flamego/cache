@@ -44,7 +44,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run tests with coverage
-        run: go test -v -race -coverprofile=coverage -covermode=atomic
+        run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic
       - name: Upload coverage report to Codecov
         uses: codecov/codecov-action@v1.5.0
         with:
@@ -78,7 +78,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run tests with coverage
-        run: go test -v -race -coverprofile=coverage -covermode=atomic ./postgres
+        run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./postgres
         env:
           PGPORT: 5432
           PGHOST: localhost
@@ -116,7 +116,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run tests with coverage
-        run: go test -v -race -coverprofile=coverage -covermode=atomic ./redis
+        run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./redis
         env:
           REDIS_HOST: localhost
           REDIS_PORT: 6379
@@ -143,7 +143,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run tests with coverage
-        run: go test -v -race -coverprofile=coverage -covermode=atomic ./mysql
+        run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mysql
         env:
           MYSQL_USER: root
           MYSQL_PASSWORD: root
@@ -183,7 +183,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Run tests with coverage
-        run: go test -v -race -coverprofile=coverage -covermode=atomic ./mongo
+        run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mongo
         env:
           MONGODB_URI: mongodb://root:password@localhost:27017
       - name: Upload coverage report to Codecov
