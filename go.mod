@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/flamego/flamego v1.9.1
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-sql-driver/mysql v1.7.0
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.2
