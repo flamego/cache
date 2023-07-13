@@ -24,8 +24,9 @@ import (
 	"github.com/jackc/pgx/v4/stdlib"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/flamego/cache"
 	"github.com/flamego/flamego"
+
+	"github.com/flamego/cache"
 )
 
 var flagParseOnce sync.Once
@@ -98,9 +99,11 @@ func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func(
 	}
 }
 
-func TestPostgresStore(t *testing.T) {
+func init() {
 	gob.Register(time.Duration(0))
+}
 
+func TestPostgresStore(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {

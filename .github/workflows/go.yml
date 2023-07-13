@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v2
         with:
@@ -38,11 +38,11 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic
       - name: Upload coverage report to Codecov
@@ -72,11 +72,11 @@ jobs:
           - 5432:5432
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./postgres
         env:
@@ -110,11 +110,11 @@ jobs:
           - 6379:6379
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./redis
         env:
@@ -137,11 +137,11 @@ jobs:
       - name: Start MySQL server
         run: sudo systemctl start mysql
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mysql
         env:
@@ -177,11 +177,11 @@ jobs:
           - 27017:27017
     steps:
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mongo
         env:
@@ -192,3 +192,24 @@ jobs:
           file: ./coverage
           flags: unittests
 
+  sqlite:
+    name: SQLite
+    strategy:
+      matrix:
+        go-version: [ 1.20.x ]
+        platform: [ ubuntu-latest ]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Run tests with coverage
+        run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./sqlite
+      - name: Upload coverage report to Codecov
+        uses: codecov/codecov-action@v1.5.0
+        with:
+          file: ./coverage
+          flags: unittests

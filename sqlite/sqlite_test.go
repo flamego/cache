@@ -1,8 +1,8 @@
-// Copyright 2021 Flamego. All rights reserved.
+// Copyright 2023 Flamego. All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package mysql
+package sqlite
 
 import (
 	"bytes"
@@ -13,48 +13,25 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/go-sql-driver/mysql"
-	"github.com/stretchr/testify/assert"
-
 	"github.com/flamego/flamego"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/flamego/cache"
 )
 
 func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func() error) {
-	dsn := os.ExpandEnv("$MYSQL_USER:$MYSQL_PASSWORD@tcp($MYSQL_HOST:$MYSQL_PORT)/?charset=utf8&parseTime=true")
-	db, err := sql.Open("mysql", dsn)
-	if err != nil {
-		t.Fatalf("Failed to open database: %v", err)
-	}
-
-	dbname := "flamego-test-cache"
-	_, err = db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS %s", quoteWithBackticks(dbname)))
-	if err != nil {
-		t.Fatalf("Failed to drop test database: %v", err)
-	}
-
-	_, err = db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s", quoteWithBackticks(dbname)))
-	if err != nil {
-		t.Fatalf("Failed to create test database: %v", err)
-	}
-
-	cfg, err := mysql.ParseDSN(dsn)
-	if err != nil {
-		t.Fatalf("Failed to parse DSN: %v", err)
-	}
-	cfg.DBName = dbname
-
-	testDB, err = sql.Open("mysql", cfg.FormatDSN())
+	dbname := filepath.Join(os.TempDir(), fmt.Sprintf("flamego-test-cache-%d.db", time.Now().Unix()))
+	testDB, err := sql.Open("sqlite", dbname)
 	if err != nil {
 		t.Fatalf("Failed to open test database: %v", err)
 	}
 
 	t.Cleanup(func() {
-		defer func() { _ = db.Close() }()
+		defer func() { _ = testDB.Close() }()
 
 		if t.Failed() {
 			t.Logf("DATABASE %s left intact for inspection", dbname)
@@ -65,10 +42,9 @@ func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func(
 		if err != nil {
 			t.Fatalf("Failed to close test connection: %v", err)
 		}
-
-		_, err = db.ExecContext(ctx, fmt.Sprintf(`DROP DATABASE %s`, quoteWithBackticks(dbname)))
+		err = os.Remove(dbname)
 		if err != nil {
-			t.Fatalf("Failed to drop test database: %v", err)
+			t.Fatalf("Failed to delete test database: %v", err)
 		}
 	})
 	return testDB, func() error {
@@ -76,7 +52,7 @@ func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func(
 			return nil
 		}
 
-		_, err = testDB.ExecContext(ctx, `TRUNCATE TABLE cache`)
+		_, err = testDB.ExecContext(ctx, `DELETE FROM cache`)
 		if err != nil {
 			return err
 		}
@@ -88,7 +64,7 @@ func init() {
 	gob.Register(time.Duration(0))
 }
 
-func TestMySQLStore(t *testing.T) {
+func TestSQLiteStore(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {
@@ -144,7 +120,7 @@ func TestMySQLStore(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 }
 
-func TestMySQLStore_GC(t *testing.T) {
+func TestSQLiteStore_GC(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {
@@ -167,9 +143,7 @@ func TestMySQLStore_GC(t *testing.T) {
 	assert.Nil(t, store.Set(ctx, "3", "3", 4*time.Second))
 
 	// Read on an expired cache item should remove it.
-	// NOTE: MySQL is behaving flaky on exact the seconds, so let's wait one more
-	//  second.
-	now = now.Add(3 * time.Second)
+	now = now.Add(2 * time.Second)
 	_, err = store.Get(ctx, "1")
 	assert.Equal(t, os.ErrNotExist, err)
 

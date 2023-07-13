@@ -17,8 +17,9 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/flamego/cache"
 	"github.com/flamego/flamego"
+
+	"github.com/flamego/cache"
 )
 
 func newTestClient(t *testing.T, ctx context.Context) (testClient *redis.Client, cleanup func() error) {
@@ -61,9 +62,11 @@ func newTestClient(t *testing.T, ctx context.Context) (testClient *redis.Client,
 	}
 }
 
-func TestRedisStore(t *testing.T) {
+func init() {
 	gob.Register(time.Duration(0))
+}
 
+func TestRedisStore(t *testing.T) {
 	ctx := context.Background()
 	client, cleanup := newTestClient(t, ctx)
 	t.Cleanup(func() {

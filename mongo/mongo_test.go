@@ -14,8 +14,9 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/flamego/cache"
 	"github.com/flamego/flamego"
+
+	"github.com/flamego/cache"
 )
 
 func newTestDB(t *testing.T, ctx context.Context) (testDB *mongo.Database, cleanup func() error) {
@@ -55,9 +56,11 @@ func newTestDB(t *testing.T, ctx context.Context) (testDB *mongo.Database, clean
 	}
 }
 
-func TestMongoStore(t *testing.T) {
+func init() {
 	gob.Register(time.Duration(0))
+}
 
+func TestMongoStore(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {
