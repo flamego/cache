@@ -19,8 +19,9 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/flamego/cache"
 	"github.com/flamego/flamego"
+
+	"github.com/flamego/cache"
 )
 
 func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func() error) {
@@ -83,9 +84,11 @@ func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func(
 	}
 }
 
-func TestMySQLStore(t *testing.T) {
+func init() {
 	gob.Register(time.Duration(0))
+}
 
+func TestMySQLStore(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {

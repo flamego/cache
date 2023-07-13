@@ -60,9 +60,11 @@ func newTestDB(t *testing.T, ctx context.Context) (testDB *sql.DB, cleanup func(
 	}
 }
 
-func TestSQLiteStore(t *testing.T) {
+func init() {
 	gob.Register(time.Duration(0))
+}
 
+func TestSQLiteStore(t *testing.T) {
 	ctx := context.Background()
 	db, cleanup := newTestDB(t, ctx)
 	t.Cleanup(func() {
