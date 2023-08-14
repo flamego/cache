@@ -14,6 +14,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/pkg/errors"
@@ -152,7 +153,11 @@ func (s *fileStore) GC(ctx context.Context) error {
 			return nil
 		}
 
-		return os.Remove(path)
+		err = os.Remove(path)
+		if err != nil && err.(*os.PathError).Err != syscall.ENOENT {
+			return err
+		}
+		return nil
 	})
 	if err != nil && err != ctx.Err() {
 		return err
