@@ -145,7 +145,7 @@ func (s *fileStore) GC(ctx context.Context) error {
 		}
 
 		item, err := s.read(path)
-		if err != nil {
+		if err != nil && errors.Cause(err).(*os.PathError).Err != syscall.ENOENT {
 			return err
 		}
 
