@@ -22,18 +22,19 @@ var _ cache.Cache = (*redisStore)(nil)
 
 // redisStore is a Redis implementation of the cache store.
 type redisStore struct {
-	client *redis.Client // The client connection
-
-	encoder cache.Encoder // The encoder to encode the cache data before saving
-	decoder cache.Decoder // The decoder to decode binary to cache data after reading
+	client    *redis.Client // The client connection
+	keyPrefix string        // The prefix to use for keys
+	encoder   cache.Encoder // The encoder to encode the cache data before saving
+	decoder   cache.Decoder // The decoder to decode binary to cache data after reading
 }
 
 // newRedisStore returns a new Redis cache store based on given configuration.
 func newRedisStore(cfg Config) *redisStore {
 	return &redisStore{
-		client:  cfg.client,
-		encoder: cfg.Encoder,
-		decoder: cfg.Decoder,
+		client:    cfg.client,
+		keyPrefix: cfg.KeyPrefix,
+		encoder:   cfg.Encoder,
+		decoder:   cfg.Decoder,
 	}
 }
 
@@ -42,7 +43,7 @@ type item struct {
 }
 
 func (s *redisStore) Get(ctx context.Context, key string) (interface{}, error) {
-	binary, err := s.client.Get(ctx, key).Result()
+	binary, err := s.client.Get(ctx, s.keyPrefix+key).Result()
 	if err != nil {
 		if err == redis.Nil {
 			return nil, os.ErrNotExist
@@ -68,7 +69,7 @@ func (s *redisStore) Set(ctx context.Context, key string, value interface{}, lif
 		return errors.Wrap(err, "encode")
 	}
 
-	err = s.client.SetEX(ctx, key, string(binary), lifetime).Err()
+	err = s.client.SetEX(ctx, s.keyPrefix+key, string(binary), lifetime).Err()
 	if err != nil {
 		return errors.Wrap(err, "set")
 	}
@@ -76,7 +77,7 @@ func (s *redisStore) Set(ctx context.Context, key string, value interface{}, lif
 }
 
 func (s *redisStore) Delete(ctx context.Context, key string) error {
-	return s.client.Del(ctx, key).Err()
+	return s.client.Del(ctx, s.keyPrefix+key).Err()
 }
 
 func (s *redisStore) Flush(ctx context.Context) error {
@@ -97,6 +98,8 @@ type Config struct {
 
 	// Options is the settings to set up Redis client connection.
 	Options *Options
+	// KeyPrefix is the prefix to use for keys in Redis. Default is "cache:".
+	KeyPrefix string
 	// Encoder is the encoder to encode cache data. Default is a Gob encoder.
 	Encoder cache.Encoder
 	// Decoder is the decoder to decode cache data. Default is a Gob decoder.
@@ -124,6 +127,9 @@ func Initer() cache.Initer {
 			cfg.client = redis.NewClient(cfg.Options)
 		}
 
+		if cfg.KeyPrefix == "" {
+			cfg.KeyPrefix = "cache:"
+		}
 		if cfg.Encoder == nil {
 			cfg.Encoder = cache.GobEncoder
 		}
