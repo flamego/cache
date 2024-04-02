@@ -10,7 +10,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	go.mongodb.org/mongo-driver v1.14.0
-	modernc.org/sqlite v1.29.2
+	modernc.org/sqlite v1.29.5
 )
 
 require (
