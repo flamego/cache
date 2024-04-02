@@ -22,9 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v4
         with:
           version: latest
           args: --timeout=30m
@@ -33,16 +33,16 @@ jobs:
     name: Test
     strategy:
       matrix:
-        go-version: [ 1.20.x, 1.21.x ]
+        go-version: [ 1.21.x, 1.22.x ]
         platform: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic
       - name: Upload coverage report to Codecov
@@ -55,7 +55,7 @@ jobs:
     name: Postgres
     strategy:
       matrix:
-        go-version: [ 1.20.x, 1.21.x ]
+        go-version: [ 1.21.x, 1.22.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     services:
@@ -72,11 +72,11 @@ jobs:
           - 5432:5432
     steps:
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./postgres
         env:
@@ -95,7 +95,7 @@ jobs:
     name: Redis
     strategy:
       matrix:
-        go-version: [ 1.20.x, 1.21.x ]
+        go-version: [ 1.21.x, 1.22.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     services:
@@ -110,11 +110,11 @@ jobs:
           - 6379:6379
     steps:
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./redis
         env:
@@ -130,18 +130,18 @@ jobs:
     name: MySQL
     strategy:
       matrix:
-        go-version: [ 1.20.x, 1.21.x ]
+        go-version: [ 1.21.x, 1.22.x ]
         platform: [ ubuntu-20.04 ]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Start MySQL server
         run: sudo systemctl start mysql
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mysql
         env:
@@ -159,7 +159,7 @@ jobs:
     name: Mongo
     strategy:
       matrix:
-        go-version: [ 1.20.x, 1.21.x ]
+        go-version: [ 1.21.x, 1.22.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     services:
@@ -177,11 +177,11 @@ jobs:
           - 27017:27017
     steps:
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mongo
         env:
@@ -196,16 +196,16 @@ jobs:
     name: SQLite
     strategy:
       matrix:
-        go-version: [ 1.20.x ]
+        go-version: [ 1.21.x, 1.22.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./sqlite
       - name: Upload coverage report to Codecov
