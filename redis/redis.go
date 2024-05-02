@@ -12,8 +12,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/flamego/cache"
 )
@@ -69,7 +69,7 @@ func (s *redisStore) Set(ctx context.Context, key string, value interface{}, lif
 		return errors.Wrap(err, "encode")
 	}
 
-	err = s.client.SetEX(ctx, s.keyPrefix+key, string(binary), lifetime).Err()
+	err = s.client.SetEx(ctx, s.keyPrefix+key, string(binary), lifetime).Err()
 	if err != nil {
 		return errors.Wrap(err, "set")
 	}
