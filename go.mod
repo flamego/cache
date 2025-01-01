@@ -1,6 +1,6 @@
 module github.com/flamego/cache
 
-go 1.18
+go 1.21
 
 require (
 	github.com/flamego/flamego v1.9.4
