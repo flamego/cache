@@ -3,7 +3,7 @@ module github.com/flamego/cache
 go 1.21
 
 require (
-	github.com/flamego/flamego v1.9.5
+	github.com/flamego/flamego v1.9.6
 	github.com/go-sql-driver/mysql v1.9.0
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/pkg/errors v0.9.1
