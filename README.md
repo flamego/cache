@@ -8,7 +8,7 @@ Package cache is a middleware that provides the cache management for [Flamego](h
 
 ## Installation
 
-The minimum requirement of Go is **1.21**.
+The minimum requirement of Go is **1.24**.
 
 	go get github.com/flamego/cache
 
