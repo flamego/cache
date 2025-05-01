@@ -7,7 +7,7 @@ require (
 	github.com/go-sql-driver/mysql v1.9.2
 	github.com/jackc/pgx/v4 v4.18.3
 	github.com/pkg/errors v0.9.1
-	github.com/redis/go-redis/v9 v9.7.3
+	github.com/redis/go-redis/v9 v9.8.0
 	github.com/stretchr/testify v1.10.0
 	go.mongodb.org/mongo-driver v1.17.3
 	modernc.org/sqlite v1.37.0
@@ -17,7 +17,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/alecthomas/participle/v2 v2.1.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charmbracelet/lipgloss v0.10.0 // indirect
 	github.com/charmbracelet/log v0.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
