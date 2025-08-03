@@ -1,16 +1,15 @@
 # cache
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/flamego/cache/go.yml?branch=main&logo=github&style=for-the-badge)](https://github.com/flamego/cache/actions?query=workflow%3AGo)
-[![Codecov](https://img.shields.io/codecov/c/gh/flamego/cache?logo=codecov&style=for-the-badge)](https://app.codecov.io/gh/flamego/cache)
 [![GoDoc](https://img.shields.io/badge/GoDoc-Reference-blue?style=for-the-badge&logo=go)](https://pkg.go.dev/github.com/flamego/cache?tab=doc)
 
 Package cache is a middleware that provides the cache management for [Flamego](https://github.com/flamego/flamego).
 
 ## Installation
 
-The minimum requirement of Go is **1.24**.
-
-	go get github.com/flamego/cache
+```zsh
+go get github.com/flamego/cache
+```
 
 ## Getting started
 
