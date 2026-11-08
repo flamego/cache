@@ -22,9 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.27.x
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: latest
           args: --timeout=30m
@@ -33,16 +37,16 @@ jobs:
     name: Test
     strategy:
       matrix:
-        go-version: [ 1.24.x ]
+        go-version: [ 1.27.x ]
         platform: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic
 
@@ -50,7 +54,7 @@ jobs:
     name: Postgres
     strategy:
       matrix:
-        go-version: [ 1.24.x ]
+        go-version: [ 1.27.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     services:
@@ -67,11 +71,11 @@ jobs:
           - 5432:5432
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./postgres
         env:
@@ -85,7 +89,7 @@ jobs:
     name: Redis
     strategy:
       matrix:
-        go-version: [ 1.24.x ]
+        go-version: [ 1.27.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     services:
@@ -100,11 +104,11 @@ jobs:
           - 6379:6379
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./redis
         env:
@@ -115,18 +119,18 @@ jobs:
     name: MySQL
     strategy:
       matrix:
-        go-version: [ 1.24.x ]
+        go-version: [ 1.27.x ]
         platform: [ ubuntu-22.04 ] # Use the lowest version possible for backwards compatibility
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Start MySQL server
         run: sudo systemctl start mysql
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mysql
         env:
@@ -139,7 +143,7 @@ jobs:
     name: Mongo
     strategy:
       matrix:
-        go-version: [ 1.24.x ]
+        go-version: [ 1.27.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     services:
@@ -157,11 +161,11 @@ jobs:
           - 27017:27017
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./mongo
         env:
@@ -171,15 +175,15 @@ jobs:
     name: SQLite
     strategy:
       matrix:
-        go-version: [ 1.24.x ]
+        go-version: [ 1.27.x ]
         platform: [ ubuntu-latest ]
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ matrix.go-version }}
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run tests with coverage
         run: go test -shuffle=on -v -race -coverprofile=coverage -covermode=atomic ./sqlite
