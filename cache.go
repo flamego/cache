@@ -16,9 +16,9 @@ import (
 type Cache interface {
 	// Get returns the value of given key in the cache. It returns os.ErrNotExist if
 	// no such key exists or the key has expired.
-	Get(ctx context.Context, key string) (interface{}, error)
+	Get(ctx context.Context, key string) (any, error)
 	// Set sets the value of the key with given lifetime in the cache.
-	Set(ctx context.Context, key string, value interface{}, lifetime time.Duration) error
+	Set(ctx context.Context, key string, value any, lifetime time.Duration) error
 	// Delete deletes a key from the cache.
 	Delete(ctx context.Context, key string) error
 	// Flush wipes out all existing data in the cache.
@@ -34,7 +34,7 @@ type Options struct {
 	Initer Initer
 	// Config is the configuration object to be passed to the Initer for the cache
 	// store.
-	Config interface{}
+	Config any
 	// GCInterval is the time interval for GC operations. Default is 5 minutes.
 	GCInterval time.Duration
 	// ErrorFunc is the function used to print errors when something went wrong on

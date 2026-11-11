@@ -39,10 +39,10 @@ func newRedisStore(cfg Config) *redisStore {
 }
 
 type item struct {
-	Value interface{}
+	Value any
 }
 
-func (s *redisStore) Get(ctx context.Context, key string) (interface{}, error) {
+func (s *redisStore) Get(ctx context.Context, key string) (any, error) {
 	binary, err := s.client.Get(ctx, s.keyPrefix+key).Result()
 	if err != nil {
 		if err == redis.Nil {
@@ -63,7 +63,7 @@ func (s *redisStore) Get(ctx context.Context, key string) (interface{}, error) {
 	return item.Value, nil
 }
 
-func (s *redisStore) Set(ctx context.Context, key string, value interface{}, lifetime time.Duration) error {
+func (s *redisStore) Set(ctx context.Context, key string, value any, lifetime time.Duration) error {
 	binary, err := s.encoder(item{value})
 	if err != nil {
 		return errors.Wrap(err, "encode")
@@ -108,7 +108,7 @@ type Config struct {
 
 // Initer returns the cache.Initer for the Redis cache store.
 func Initer() cache.Initer {
-	return func(ctx context.Context, args ...interface{}) (cache.Cache, error) {
+	return func(ctx context.Context, args ...any) (cache.Cache, error) {
 		var cfg *Config
 		for i := range args {
 			switch v := args[i].(type) {
@@ -134,7 +134,7 @@ func Initer() cache.Initer {
 			cfg.Encoder = cache.GobEncoder
 		}
 		if cfg.Decoder == nil {
-			cfg.Decoder = func(binary []byte) (interface{}, error) {
+			cfg.Decoder = func(binary []byte) (any, error) {
 				buf := bytes.NewBuffer(binary)
 				var v item
 				return &v, gob.NewDecoder(buf).Decode(&v)

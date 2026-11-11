@@ -11,7 +11,7 @@ import (
 
 // Initer takes arbitrary number of arguments needed for initialization and
 // returns an initialized cache store.
-type Initer func(ctx context.Context, args ...interface{}) (Cache, error)
+type Initer func(ctx context.Context, args ...any) (Cache, error)
 
 // manager is wrapper for wiring HTTP request and cache stores.
 type manager struct {

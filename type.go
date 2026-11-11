@@ -10,13 +10,13 @@ import (
 )
 
 // Encoder is an encoder to encode cache data to binary.
-type Encoder func(interface{}) ([]byte, error)
+type Encoder func(any) ([]byte, error)
 
 // Decoder is a decoder to decode binary to cache data.
-type Decoder func([]byte) (interface{}, error)
+type Decoder func([]byte) (any, error)
 
 // GobEncoder is a cache data encoder using Gob.
-func GobEncoder(v interface{}) ([]byte, error) {
+func GobEncoder(v any) ([]byte, error) {
 	var buf bytes.Buffer
 	err := gob.NewEncoder(&buf).Encode(v)
 	if err != nil {
