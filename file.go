@@ -22,7 +22,7 @@ import (
 
 // fileItem is a file cache item.
 type fileItem struct {
-	Value     interface{}
+	Value     any
 	ExpiredAt time.Time // The expiration time of the cache item
 }
 
@@ -80,7 +80,7 @@ func (s *fileStore) read(filename string) (*fileItem, error) {
 	return item, nil
 }
 
-func (s *fileStore) Get(ctx context.Context, key string) (interface{}, error) {
+func (s *fileStore) Get(ctx context.Context, key string) (any, error) {
 	filename := s.filename(key)
 
 	if !isFile(filename) {
@@ -99,7 +99,7 @@ func (s *fileStore) Get(ctx context.Context, key string) (interface{}, error) {
 	return item.Value, nil
 }
 
-func (s *fileStore) Set(_ context.Context, key string, value interface{}, lifetime time.Duration) error {
+func (s *fileStore) Set(_ context.Context, key string, value any, lifetime time.Duration) error {
 	binary, err := s.encoder(fileItem{
 		Value:     value,
 		ExpiredAt: s.nowFunc().Add(lifetime).UTC(),
@@ -183,7 +183,7 @@ type FileConfig struct {
 
 // FileIniter returns the Initer for the file cache store.
 func FileIniter() Initer {
-	return func(_ context.Context, args ...interface{}) (Cache, error) {
+	return func(_ context.Context, args ...any) (Cache, error) {
 		var cfg *FileConfig
 		for i := range args {
 			switch v := args[i].(type) {
@@ -205,7 +205,7 @@ func FileIniter() Initer {
 			cfg.Encoder = GobEncoder
 		}
 		if cfg.Decoder == nil {
-			cfg.Decoder = func(binary []byte) (interface{}, error) {
+			cfg.Decoder = func(binary []byte) (any, error) {
 				buf := bytes.NewBuffer(binary)
 				var v fileItem
 				return &v, gob.NewDecoder(buf).Decode(&v)

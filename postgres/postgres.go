@@ -44,10 +44,10 @@ func newPostgresStore(cfg Config) *postgresStore {
 }
 
 type item struct {
-	Value interface{}
+	Value any
 }
 
-func (s *postgresStore) Get(ctx context.Context, key string) (interface{}, error) {
+func (s *postgresStore) Get(ctx context.Context, key string) (any, error) {
 	var binary []byte
 	q := fmt.Sprintf(`SELECT data FROM %q WHERE key = $1 AND expired_at > $2`, s.table)
 	err := s.db.QueryRowContext(ctx, q, key, s.nowFunc()).Scan(&binary)
@@ -70,7 +70,7 @@ func (s *postgresStore) Get(ctx context.Context, key string) (interface{}, error
 	return item.Value, nil
 }
 
-func (s *postgresStore) Set(ctx context.Context, key string, value interface{}, lifetime time.Duration) error {
+func (s *postgresStore) Set(ctx context.Context, key string, value any, lifetime time.Duration) error {
 	binary, err := s.encoder(item{value})
 	if err != nil {
 		return errors.Wrap(err, "encode")
@@ -137,7 +137,7 @@ func openDB(dsn string) (*sql.DB, error) {
 
 // Initer returns the cache.Initer for the Postgres cache store.
 func Initer() cache.Initer {
-	return func(ctx context.Context, args ...interface{}) (cache.Cache, error) {
+	return func(ctx context.Context, args ...any) (cache.Cache, error) {
 		var cfg *Config
 		for i := range args {
 			switch v := args[i].(type) {
@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS cache (
 			cfg.Encoder = cache.GobEncoder
 		}
 		if cfg.Decoder == nil {
-			cfg.Decoder = func(binary []byte) (interface{}, error) {
+			cfg.Decoder = func(binary []byte) (any, error) {
 				buf := bytes.NewBuffer(binary)
 				var v item
 				return &v, gob.NewDecoder(buf).Decode(&v)

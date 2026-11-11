@@ -15,7 +15,7 @@ import (
 // memoryItem is an in-memory cache item.
 type memoryItem struct {
 	key       string
-	value     interface{}
+	value     any
 	expiredAt time.Time // The expiration time of the cache item
 
 	index int // The index in the heap
@@ -23,7 +23,7 @@ type memoryItem struct {
 
 // newMemoryItem returns a new memory cache item with given key, value and
 // expiration time.
-func newMemoryItem(key string, value interface{}, expiredAt time.Time) *memoryItem {
+func newMemoryItem(key string, value any, expiredAt time.Time) *memoryItem {
 	return &memoryItem{
 		key:       key,
 		value:     value,
@@ -78,7 +78,7 @@ func (s *memoryStore) Swap(i, j int) {
 // Push implements `heap.Interface.Push`. It is not concurrent-safe and is the
 // caller's responsibility to ensure they're being guarded by a mutex during any
 // heap operation, i.e. heap.Fix, heap.Remove, heap.Push, heap.Pop.
-func (s *memoryStore) Push(x interface{}) {
+func (s *memoryStore) Push(x any) {
 	n := s.Len()
 	item := x.(*memoryItem)
 	item.index = n
@@ -89,7 +89,7 @@ func (s *memoryStore) Push(x interface{}) {
 // Pop implements `heap.Interface.Pop`. It is not concurrent-safe and is the
 // caller's responsibility to ensure they're being guarded by a mutex during any
 // heap operation, i.e. heap.Fix, heap.Remove, heap.Push, heap.Pop.
-func (s *memoryStore) Pop() interface{} {
+func (s *memoryStore) Pop() any {
 	n := s.Len()
 	item := s.heap[n-1]
 
@@ -101,7 +101,7 @@ func (s *memoryStore) Pop() interface{} {
 	return item
 }
 
-func (s *memoryStore) Get(ctx context.Context, key string) (interface{}, error) {
+func (s *memoryStore) Get(ctx context.Context, key string) (any, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -117,7 +117,7 @@ func (s *memoryStore) Get(ctx context.Context, key string) (interface{}, error) 
 	return item.value, nil
 }
 
-func (s *memoryStore) Set(_ context.Context, key string, value interface{}, lifetime time.Duration) error {
+func (s *memoryStore) Set(_ context.Context, key string, value any, lifetime time.Duration) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -190,7 +190,7 @@ type MemoryConfig struct {
 
 // MemoryIniter returns the Initer for the memory cache store.
 func MemoryIniter() Initer {
-	return func(_ context.Context, args ...interface{}) (Cache, error) {
+	return func(_ context.Context, args ...any) (Cache, error) {
 		var cfg *MemoryConfig
 		for i := range args {
 			switch v := args[i].(type) {
