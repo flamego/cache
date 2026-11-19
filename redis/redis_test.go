@@ -139,8 +139,10 @@ func TestRedisStore_GC(t *testing.T) {
 	assert.Nil(t, store.Set(ctx, "2", "2", 2*time.Second))
 	assert.Nil(t, store.Set(ctx, "3", "3", 3*time.Second))
 
-	// Read on an expired cache item should remove it
-	time.Sleep(2 * time.Second)
+	// Read on an expired cache item should remove it. Sleep past the lifetime of
+	// "2" by a margin because Redis only expires a key once its deadline has
+	// passed, but stay well within the lifetime of "3".
+	time.Sleep(2500 * time.Millisecond)
 	_, err = store.Get(ctx, "1")
 	assert.Equal(t, os.ErrNotExist, err)
 
